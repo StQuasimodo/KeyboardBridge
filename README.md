@@ -4,7 +4,9 @@
 
 KeyboardBridge 是面向个人使用的**跨设备文字输入桥接工具**。最初的使用场景是：在 HarmonyOS 7 手机的第三方日记 App 中写日记，但希望使用 Windows 电脑的实体键盘输入中文。项目不打算替换日记 App、读取或迁移日记数据库，也不提供云端日记服务。
 
-> **项目状态：Phase 0 — 可行性验证（真机未验证）。** 已在 HarmonyOS 7.0.0（API 26）**模拟器**上确认：HDC 的 `uitest uiInput text` 可以把简体中文写入当前获焦输入框，且目标系统不含 adb。但**零售真机上该能力是否可用仍未知**，因此不宣称已支持 HarmonyOS 7。
+> **项目状态：Phase 0 未通过真机验证；Phase 1 Windows 助手已做出模拟器可用原型。**
+> 已在 HarmonyOS 7.0.0（API 26）**模拟器**上确认：HDC 的 `uitest uiInput text` 可以把简体中文写入当前获焦输入框，且目标系统不含 adb。
+> **零售真机上该能力是否可用仍未知**，因此不宣称已支持 HarmonyOS 7，也不宣称本项目已可日常使用。
 
 ## 设备与边界
 
@@ -55,6 +57,21 @@ KeyboardBridge 是面向个人使用的**跨设备文字输入桥接工具**。�
 - [Phase 0 技术研究](docs/PHASE0-RESEARCH.md)
 - [真机验证脚本](scripts/Test-DeviceBridge.ps1)：`powershell -ExecutionPolicy Bypass -File .\scripts\Test-DeviceBridge.ps1`
 
+## Windows 输入助手（Phase 1 原型）
+
+单文件 WinForms 程序，用 Windows 自带编译器构建，无需安装 .NET SDK：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\src\KeyboardBridge\build.ps1
+.\bin\KeyboardBridge.exe
+```
+
+- 在程序自己的编辑框里打字（不监听全局键盘），`Ctrl+Enter` 发送到手机光标处。
+- 正文不拼进命令行，走「临时文件 + 设备端脚本」通道，引号/反斜杠/`$`/emoji 均可原样保留。
+- 已有**模拟器**端到端验证；**真机未验证**。
+
+细节、已知限制与实测记录见 [docs/PHASE1-WINDOWS-APP.md](docs/PHASE1-WINDOWS-APP.md)。
+
 ## 技术路线（条件决策）
 
 - **A｜系统原生键鼠共享：** 非华为 Windows 电脑预期不受支持；需在手机上确认是否存在脱离华为电脑使用的入口。**未验证。**
@@ -89,6 +106,7 @@ Codex 在开始任务前**必须阅读 [AGENTS.md](AGENTS.md)**。仓库尚未�
 - [docs/VALIDATION.md](docs/VALIDATION.md)：真机验证记录模板与验收要求
 - [docs/PHASE0-AUDIT.md](docs/PHASE0-AUDIT.md)：本机环境审计报告
 - [docs/PHASE0-HDC-SPIKE.md](docs/PHASE0-HDC-SPIKE.md)：HDC 输入能力实证与真机验证计划
+- [docs/PHASE1-WINDOWS-APP.md](docs/PHASE1-WINDOWS-APP.md)：Windows 助手的设计、实测结果与已知限制
 - [docs/PHASE0-RESEARCH.md](docs/PHASE0-RESEARCH.md)：现有鸿蒙路线研究及风险
 - [docs/PHASE0-HANDOFF.md](docs/PHASE0-HANDOFF.md)：现场验证操作说明
 
