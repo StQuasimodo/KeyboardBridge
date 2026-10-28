@@ -4,7 +4,7 @@
 
 KeyboardBridge 是面向个人使用的**跨设备文字输入桥接工具**。最初的使用场景是：在 HarmonyOS 7 手机的第三方日记 App 中写日记，但希望使用 Windows 电脑的实体键盘输入中文。项目不打算替换日记 App、读取或迁移日记数据库，也不提供云端日记服务。
 
-> **项目状态：Phase 0 — 可行性验证。** 尚未确认目标 HarmonyOS 7 真机支持无线 ADB、scrcpy 的 UHID 模式或第三方输入法扩展。仓库中的技术方案是待验证假设，不能视为已实现能力。
+> **项目状态：Phase 0 — 可行性验证（真机未验证）。** 已在 HarmonyOS 7.0.0（API 26）**模拟器**上确认：HDC 的 `uitest uiInput text` 可以把简体中文写入当前获焦输入框，且目标系统不含 adb。但**零售真机上该能力是否可用仍未知**，因此不宣称已支持 HarmonyOS 7。
 
 ## 设备与边界
 
@@ -36,20 +36,32 @@ KeyboardBridge 是面向个人使用的**跨设备文字输入桥接工具**。�
 
 **注意：上面描述的是目标体验，不代表当前版本已经具备这些功能。**
 
-## Phase 0 最新研究
+## Phase 0 最新研究（2026-10-28）
 
-在原生 HarmonyOS 7 设备上，不应默认使用依赖 Android ADB 的标准 scrcpy。**当前优先验证 HDC 和合适的鸿蒙输入接口**。社区 HDC 工具的输入功能尚未在目标真机确认。
+目标系统是**纯血 HarmonyOS**：调试通道为 HDC，**不存在 adb**，因此标准 scrcpy / UHID 路线不成立。
 
+模拟器实测（**非真机**）：
+
+- ✅ `hdc shell uitest uiInput text <中文>` 可把中文写入当前获焦输入框（API 18+）。
+- ✅ `uitest`、`uinput` 都在 `/system/bin`，shell 可执行。
+- ❌ `uinput -K -t` 只支持 ASCII，**无法输入中文**。
+- ⚠️ 没有焦点时注入会**静默丢弃**（返回 `No Error`、退出码 0）。
+- ⏱ 单次 `hdc shell` 往返约 **304 ms**。
+
+**最大未知：零售真机上 `uitest` 是否同样可用。** 官方文档存在"仅 `aa test` 拉起的测试 HAP 才能调用 UiTest 能力"的限制说明。
+
+- [Phase 0 环境审计](docs/PHASE0-AUDIT.md)
+- [Phase 0 HDC 能力实证](docs/PHASE0-HDC-SPIKE.md)
 - [Phase 0 技术研究](docs/PHASE0-RESEARCH.md)
-- [Windows 与手机现场验证步骤](docs/PHASE0-HANDOFF.md)
-- [只读环境检测脚本](scripts/Inspect-Environment.ps1)
+- [真机验证脚本](scripts/Test-DeviceBridge.ps1)：`powershell -ExecutionPolicy Bypass -File .\scripts\Test-DeviceBridge.ps1`
 
 ## 技术路线（条件决策）
 
-- **A｜系统原生键鼠共享：** 检查当前手机与非华为 Windows 电脑组合是否真正受支持；不因手机显示功能入口就推断电脑端可以连接。
-- **B｜HDC 与鸿蒙专用输入工具：** 当前优先验证 HDC、现有社区工具的源码及权限要求；参考 [Phase 0 研究](docs/PHASE0-RESEARCH.md)。Android 版 scrcpy 仅在设备实际提供兼容 ADB 环境时验证。
-- **C｜自研桥接：** 仅在 A、B 无法满足需求时进行。先核验 HarmonyOS 官方公开的输入法扩展、输入提交和跨设备通信能力；无法证明第三方 App 输入可用时，不启动完整实现。
-- **保底方案：** 用户主动复制、粘贴或其他受支持的文本交接流程，避免绕过平台安全机制。
+- **A｜系统原生键鼠共享：** 非华为 Windows 电脑预期不受支持；需在手机上确认是否存在脱离华为电脑使用的入口。**未验证。**
+- **B｜HDC + `uitest` 文本提交（当前首选）：** 模拟器已证明中文可写入获焦输入框；真机待验证。注意这是"**文本提交**"而非"键盘共享"——拼音与候选词在 **Windows 端输入法**完成，手机只接收已上屏文本。
+- **B2｜scrcpy / ADB / UHID：** **已排除**，目标系统无 adb。
+- **C｜自研鸿蒙输入法：** 官方支持，但需要开发者签名、安装与用户手动启用，成本最高；仅在 B 真机失败时考虑。
+- **保底方案：** 用户主动复制、粘贴，不绕过平台安全机制。
 
 ## 路线图
 
@@ -75,6 +87,8 @@ Codex 在开始任务前**必须阅读 [AGENTS.md](AGENTS.md)**。仓库尚未�
 - [AGENTS.md](AGENTS.md)：Codex/Agent 项目级约束与工作流程
 - [docs/ROADMAP.md](docs/ROADMAP.md)：范围、架构选项与阶段门槛
 - [docs/VALIDATION.md](docs/VALIDATION.md)：真机验证记录模板与验收要求
+- [docs/PHASE0-AUDIT.md](docs/PHASE0-AUDIT.md)：本机环境审计报告
+- [docs/PHASE0-HDC-SPIKE.md](docs/PHASE0-HDC-SPIKE.md)：HDC 输入能力实证与真机验证计划
 - [docs/PHASE0-RESEARCH.md](docs/PHASE0-RESEARCH.md)：现有鸿蒙路线研究及风险
 - [docs/PHASE0-HANDOFF.md](docs/PHASE0-HANDOFF.md)：现场验证操作说明
 
