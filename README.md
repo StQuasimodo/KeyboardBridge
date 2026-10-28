@@ -36,10 +36,18 @@ KeyboardBridge 是面向个人使用的**跨设备文字输入桥接工具**。�
 
 **注意：上面描述的是目标体验，不代表当前版本已经具备这些功能。**
 
+## Phase 0 最新研究
+
+在原生 HarmonyOS 7 设备上，不应默认使用依赖 Android ADB 的标准 scrcpy。**当前优先验证 HDC 和合适的鸿蒙输入接口**。社区 HDC 工具的输入功能尚未在目标真机确认。
+
+- [Phase 0 技术研究](docs/PHASE0-RESEARCH.md)
+- [Windows 与手机现场验证步骤](docs/PHASE0-HANDOFF.md)
+- [只读环境检测脚本](scripts/Inspect-Environment.ps1)
+
 ## 技术路线（条件决策）
 
 - **A｜系统原生键鼠共享：** 检查当前手机与非华为 Windows 电脑组合是否真正受支持；不因手机显示功能入口就推断电脑端可以连接。
-- **B｜scrcpy / 无线 ADB / UHID：** 优先验证；参考 [scrcpy 官方仓库](https://github.com/Genymobile/scrcpy)。需分别验证无线连接、键盘事件和中文输入，不把 Android 文档直接当作 HarmonyOS 7 兼容性证明。
+- **B｜HDC 与鸿蒙专用输入工具：** 当前优先验证 HDC、现有社区工具的源码及权限要求；参考 [Phase 0 研究](docs/PHASE0-RESEARCH.md)。Android 版 scrcpy 仅在设备实际提供兼容 ADB 环境时验证。
 - **C｜自研桥接：** 仅在 A、B 无法满足需求时进行。先核验 HarmonyOS 官方公开的输入法扩展、输入提交和跨设备通信能力；无法证明第三方 App 输入可用时，不启动完整实现。
 - **保底方案：** 用户主动复制、粘贴或其他受支持的文本交接流程，避免绕过平台安全机制。
 
@@ -67,6 +75,8 @@ Codex 在开始任务前**必须阅读 [AGENTS.md](AGENTS.md)**。仓库尚未�
 - [AGENTS.md](AGENTS.md)：Codex/Agent 项目级约束与工作流程
 - [docs/ROADMAP.md](docs/ROADMAP.md)：范围、架构选项与阶段门槛
 - [docs/VALIDATION.md](docs/VALIDATION.md)：真机验证记录模板与验收要求
+- [docs/PHASE0-RESEARCH.md](docs/PHASE0-RESEARCH.md)：现有鸿蒙路线研究及风险
+- [docs/PHASE0-HANDOFF.md](docs/PHASE0-HANDOFF.md)：现场验证操作说明
 
 ## 隐私提醒
 
